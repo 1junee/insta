@@ -44,10 +44,13 @@ class User(Base):
 class UserSession():
     __tablename__ = 'sessions'
 
-    id: Mapped[str]
-    user_id: Mapped[int]
-    created_at: Mapped[datetime]
-    user: Mapped['User']
+    # 신분증
+    id: Mapped[str] = mapped_column()
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    # 클래스를 따옴표 안에 넣어서 어느 순서에 있든 불러올 수 있게
+    # 단방향 연결
+    user: Mapped['User'] = relationship()
 
 
 app = FastAPI()
