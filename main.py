@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import create_engine, select, func, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, relationship
 from datetime import datetime
+from pwdlib import PasswordHash
 
 DB_URL = 'postgresql+psycopg://sd4:sd4@localhost:5432/insta'
 engine = create_engine(DB_URL, echo=True)
@@ -43,6 +44,7 @@ class User(Base):
 
 app = FastAPI()
 templates = Jinja2Templates(directory='templates')
+password_to_hash = PasswordHash.recommended()
 
 def get_db():
   with Session(engine) as db:
@@ -54,7 +56,7 @@ def get_post_or_404(post_id: int, db: Session = Depends(get_db)):
   if post is None:
     # from fastapi import HTTPException
     raise HTTPException(status_code=404, detail='해당 게시물이 없습니다.')
-  
+
   return post
 
 
@@ -66,7 +68,7 @@ def home():
 @app.get('/posts')
 def post_list(request: Request, db: Session = Depends(get_db)):
   # with Session(engine) as db:
-  
+
   # posts = db.scalars(select(Post)).all()
   posts = db.scalars(select(Post).order_by(Post.created_at.desc())).all()
   return templates.TemplateResponse(
@@ -118,7 +120,7 @@ def post_edit(request: Request, post: Post = Depends(get_post_or_404)):
 
 @app.post('/posts/{post_id}/update')
 def post_update(
-  content: str = Form(), 
+  content: str = Form(),
   post: Post = Depends(get_post_or_404),
   db: Session = Depends(get_db)
 ):
@@ -163,13 +165,43 @@ def comment_delete(post_id: int, comment_id: int, db: Session = Depends(get_db))
 # a태그를 통해 들어오는 signup
 @app.get('/signup')
 def signup_form(request: Request):
-	return templates.TemplateResponse(
+    return templates.TemplateResponse(
         request=request,
         name='signup.html'
-	)
+    )
 
 # form method = 'post' 방식으로 들어오는 signup
 @app.post('/signup')
-def signup():
-	pass
+def signup(
+    request: Request,
+    username: str = Form(),
+    password: str = Form(),
+    db: Session = Depends(get_db)
+):
+    # 이미 있는 유저인지 검증
+    exists = db.scalar(select(User).where(User.username == username))
+    if exists:
+        # return RedirectResponse('/signup', status_code=303)
+        return templates.TemplateResponse(
+          request=request,
+          name='/signup.html',
+          context={'error': '이미 있는 아이디입니다.'}
+        )
 
+    # password를 해시로 변환
+    # from pwdlib import PasswordHash
+    password_hash = password_to_hash.hash(password)
+
+    user = User(username=username, password_hash=password_hash)
+    db.add(user)
+    db.commit()
+    return RedirectResponse('/login', status_code=303)
+
+
+@app.get('/login')
+def login_form():
+    pass
+
+@app.get('/login')
+def login():
+    pass
