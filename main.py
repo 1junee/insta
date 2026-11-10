@@ -11,35 +11,43 @@ engine = create_engine(DB_URL, echo=True)
 
 # 모델 정의
 class Base(DeclarativeBase):
-  pass
+    pass
 
 class Post(Base):
-  __tablename__ = 'posts'
+    __tablename__ = 'posts'
 
-  id: Mapped[int] = mapped_column(primary_key=True)
-  content: Mapped[str]
-  created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-  # created_at: Mapped[datetime]
-  comments: Mapped[list['Comment']] = relationship(
-    back_populates='post',
-    cascade='all, delete-orphan'
-  )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    # created_at: Mapped[datetime]
+    comments: Mapped[list['Comment']] = relationship(
+        back_populates='post',
+        cascade='all, delete-orphan'
+    )
 
 class Comment(Base):
-  __tablename__ = 'comments'
+    __tablename__ = 'comments'
 
-  id: Mapped[int] = mapped_column(primary_key=True)
-  content: Mapped[str]
-  created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-  post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'))
-  post: Mapped['Post'] = relationship(back_populates='comments')
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'))
+    post: Mapped['Post'] = relationship(back_populates='comments')
 
 class User(Base):
-   __tablename__ = 'users'
+    __tablename__ = 'users'
 
-   id: Mapped[int] = mapped_column(primary_key=True)
-   username: Mapped[str] = mapped_column(unique=True)
-   password_hash: Mapped[str]
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True)
+    password_hash: Mapped[str]
+
+class UserSession():
+    __tablename__ = 'sessions'
+
+    id: Mapped[str]
+    user_id: Mapped[int]
+    created_at: Mapped[datetime]
+    user: Mapped['User']
 
 
 app = FastAPI()
@@ -47,119 +55,119 @@ templates = Jinja2Templates(directory='templates')
 password_to_hash = PasswordHash.recommended()
 
 def get_db():
-  with Session(engine) as db:
-    yield db
+    with Session(engine) as db:
+        yield db
 
 def get_post_or_404(post_id: int, db: Session = Depends(get_db)):
-  post = db.get(Post, post_id)
+    post = db.get(Post, post_id)
 
-  if post is None:
-    # from fastapi import HTTPException
-    raise HTTPException(status_code=404, detail='해당 게시물이 없습니다.')
+    if post is None:
+        # from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail='해당 게시물이 없습니다.')
 
-  return post
+    return post
 
 
 @app.get('/')
 def home():
-  return {'hi': 'hello'}
+    return {'hi': 'hello'}
 
 
 @app.get('/posts')
 def post_list(request: Request, db: Session = Depends(get_db)):
-  # with Session(engine) as db:
+    # with Session(engine) as db:
 
-  # posts = db.scalars(select(Post)).all()
-  posts = db.scalars(select(Post).order_by(Post.created_at.desc())).all()
-  return templates.TemplateResponse(
-    request=request,
-    name='list.html',
-    context={'posts': posts}
-  )
+    # posts = db.scalars(select(Post)).all()
+    posts = db.scalars(select(Post).order_by(Post.created_at.desc())).all()
+    return templates.TemplateResponse(
+        request=request,
+        name='list.html',
+        context={'posts': posts}
+    )
 
 
 @app.get('/posts/new')
 def post_new(request: Request):
-  return templates.TemplateResponse(
-    request=request,
-    name='new.html'
-  )
+    return templates.TemplateResponse(
+        request=request,
+        name='new.html'
+    )
 
 
 @app.post('/posts/create')
 def post_create(content: str = Form(), db: Session = Depends(get_db)):
-  # db = Session(engine)
-  post = Post(content=content)
-  db.add(post)
-  db.commit()
+    # db = Session(engine)
+    post = Post(content=content)
+    db.add(post)
+    db.commit()
 
-  # from fastapi.responses import RedirectResponse
-  return RedirectResponse('/posts', status_code=303)
+    # from fastapi.responses import RedirectResponse
+    return RedirectResponse('/posts', status_code=303)
 
 
 @app.get('/posts/{post_id}')
 def post_detail(request: Request, post: Post = Depends(get_post_or_404)):
-  # comments = db.scalars(select(Comment).where().order_by(Comment.created_at.desc()))
-  return templates.TemplateResponse(
-    request=request,
-    name='detail.html',
-    context={
-      'post': post
-    }
-  )
+    # comments = db.scalars(select(Comment).where().order_by(Comment.created_at.desc()))
+    return templates.TemplateResponse(
+        request=request,
+        name='detail.html',
+        context={
+            'post': post
+        }
+    )
 
 
 @app.get('/posts/{post_id}/edit')
 def post_edit(request: Request, post: Post = Depends(get_post_or_404)):
-  return templates.TemplateResponse(
-    request=request,
-    name='edit.html',
-    context={'post': post}
-  )
+    return templates.TemplateResponse(
+        request=request,
+        name='edit.html',
+        context={'post': post}
+    )
 
 
 @app.post('/posts/{post_id}/update')
 def post_update(
-  content: str = Form(),
-  post: Post = Depends(get_post_or_404),
-  db: Session = Depends(get_db)
+    content: str = Form(),
+    post: Post = Depends(get_post_or_404),
+    db: Session = Depends(get_db)
 ):
-  post.content = content
-  db.commit()
+    post.content = content
+    db.commit()
 
-  return RedirectResponse('/posts', status_code=303)
+    return RedirectResponse('/posts', status_code=303)
 
 
 @app.post('/posts/{post_id}/delete')
 def post_delete(
-  post: Post = Depends(get_post_or_404),
-  db: Session = Depends(get_db)
+    post: Post = Depends(get_post_or_404),
+    db: Session = Depends(get_db)
 ):
-  db.delete(post)
-  db.commit()
-  return RedirectResponse('/posts', status_code=303)
+    db.delete(post)
+    db.commit()
+    return RedirectResponse('/posts', status_code=303)
 
 
 @app.post('/posts/{post_id}/comments/create')
 def comment_create(
-  content: str = Form(),
-  post: Post = Depends(get_post_or_404),
-  db: Session = Depends(get_db)
+    content: str = Form(),
+    post: Post = Depends(get_post_or_404),
+    db: Session = Depends(get_db)
 ):
-  comment = Comment(content=content, post=post)
-  db.add(comment)
-  db.commit()
+    comment = Comment(content=content, post=post)
+    db.add(comment)
+    db.commit()
 
-  return RedirectResponse(f'/posts/{post.id}', status_code=303)
+    return RedirectResponse(f'/posts/{post.id}', status_code=303)
 
 
 @app.post('/posts/{post_id}/comments/{comment_id}/delete')
 def comment_delete(post_id: int, comment_id: int, db: Session = Depends(get_db)):
-  comment = db.get(Comment, comment_id)
-  db.delete(comment)
-  db.commit()
+    comment = db.get(Comment, comment_id)
+    db.delete(comment)
+    db.commit()
 
-  return RedirectResponse(f'/posts/{post_id}', status_code=303)
+    return RedirectResponse(f'/posts/{post_id}', status_code=303)
 
 
 # a태그를 통해 들어오는 signup
@@ -183,9 +191,9 @@ def signup(
     if exists:
         # return RedirectResponse('/signup', status_code=303)
         return templates.TemplateResponse(
-          request=request,
-          name='/signup.html',
-          context={'error': '이미 있는 아이디입니다.'}
+            request=request,
+            name='/signup.html',
+            context={'error': '이미 있는 아이디입니다.'}
         )
 
     # password를 해시로 변환
@@ -199,9 +207,12 @@ def signup(
 
 
 @app.get('/login')
-def login_form():
-    pass
+def login_form(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name='login.html'
+    )
 
-@app.get('/login')
+@app.post('/login')
 def login():
     pass

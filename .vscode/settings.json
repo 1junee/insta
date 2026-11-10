@@ -1,0 +1,24 @@
+{
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.indentSize": 4,
+    "editor.detectIndentation": false,
+    "[python]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.indentSize": 4,
+        "editor.detectIndentation": false
+    },
+    "[html]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.indentSize": 4,
+        "editor.detectIndentation": false
+    },
+    "[jinja-html]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.indentSize": 4,
+        "editor.detectIndentation": false
+    }
+}
