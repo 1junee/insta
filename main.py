@@ -6,6 +6,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, rela
 from datetime import datetime
 from pwdlib import PasswordHash
 import secrets
+from typing import Annotated
+
 
 # DB 연결 설정: engine은 연결을 관리하고 echo=True는 실행 SQL을 출력한다.
 DB_URL = 'postgresql+psycopg://sd4:sd4@localhost:5432/insta'
@@ -118,10 +120,12 @@ def get_db():
         # db를 제공하고 사용이 끝나면 with가 세션을 닫는다. commit은 각 처리에서 한다.
         yield db
 
+SessionDep = Annotated[Session, Depends(get_db)]
+
 
 # 공통 함수: 게시글 조회 또는 404 응답 ===============================
 # URL의 {post_id}로 글을 찾고, 없으면 404로 처리를 끝낸다.
-def get_post_or_404(post_id: int, db: Session = Depends(get_db)):
+def get_post_or_404(post_id: int, db: SessionDep):
     # 기본 키로 조회한다. 예: post_id=7이면 posts 테이블의 id=7인 행을 찾는다.
     post = db.get(Post, post_id)
 
@@ -130,11 +134,13 @@ def get_post_or_404(post_id: int, db: Session = Depends(get_db)):
 
     return post
 
+PostDep = Annotated[Post, Depends(get_post_or_404)]
+
 
 # 공통 함수: 현재 로그인 사용자 확인 ================================
 # 요청 쿠키의 세션 ID → DB의 세션 행 → 연결된 User 객체 순서로 찾는다.
 # 반환값은 로그인한 User 객체 또는 None이다.
-def get_current_user(request: Request, db: Session = Depends(get_db)):
+def get_current_user(request: Request, db: SessionDep):
     # 이번 요청에서 브라우저가 보낸 session_id 쿠키 값을 꺼낸다.
     session_id = request.cookies.get('session_id')
 
@@ -151,7 +157,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     # 세션에 연결된 User 객체를 반환한다. 현재 코드에는 세션 시간 만료 검사가 없다.
     return user_session.user
 
-
+CurrentUserDep = Annotated[UserSession, Depends(get_current_user)]
 
 
 # HOME: 기본 응답 확인 ==============================================
@@ -166,8 +172,8 @@ def home():
 @app.get('/posts')
 def post_list(
     request: Request,
-    db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user),
+    db: SessionDep,
+    user: CurrentUserDep,
 ):
     liked_ids = []
     if user:
@@ -186,7 +192,10 @@ def post_list(
 
 # CREATE 1: 글 작성 폼 표시 (GET) ====================================
 @app.get('/posts/new')
-def post_new(request: Request, user: User | None = Depends(get_current_user)):
+def post_new(
+    request: Request, 
+    user: CurrentUserDep
+):
     # 로그인 사용자 정보가 없으면 로그인 화면으로 이동한다.
     if user is None:
         return RedirectResponse('/login', status_code=303)
@@ -200,9 +209,9 @@ def post_new(request: Request, user: User | None = Depends(get_current_user)):
 # Form()은 HTML의 name="content"로 보낸 입력값을 받는다.
 @app.post('/posts/create')
 def post_create(
+    db: SessionDep,
+    user: CurrentUserDep,
     content: str = Form(),
-    db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user),
 ):
     # 로그인 사용자 정보가 없으면 로그인 화면으로 이동한다.
     if user is None:
@@ -224,8 +233,8 @@ def post_create(
 @app.get('/posts/{post_id}')
 def post_detail(
     request: Request,
-    post: Post = Depends(get_post_or_404),
-    user: User | None = Depends(get_current_user),
+    post: PostDep,
+    user: CurrentUserDep,
 ):
     return templates.TemplateResponse(
         # 화면은 post.comments로 댓글을, post.user.username으로 작성자 이름을 읽는다.
@@ -237,8 +246,8 @@ def post_detail(
 @app.get('/posts/{post_id}/edit')
 def post_edit(
     request: Request,
-    post: Post = Depends(get_post_or_404),
-    user: User | None = Depends(get_current_user),
+    post: PostDep,
+    user: CurrentUserDep,
 ):
     # 로그인 사용자 정보가 없으면 로그인 화면으로 이동한다.
     if user is None:
@@ -257,10 +266,10 @@ def post_edit(
 # 버튼을 숨겨도 직접 요청할 수 있으므로 서버에서도 작성자를 확인한다.
 @app.post('/posts/{post_id}/update')
 def post_update(
+    post: PostDep,
+    db: SessionDep,
+    user: CurrentUserDep,
     content: str = Form(),
-    post: Post = Depends(get_post_or_404),
-    db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user),
 ):
     # 로그인 사용자 정보가 없으면 로그인 화면으로 이동한다.
     if user is None:
@@ -279,9 +288,9 @@ def post_update(
 # DELETE: 작성자 확인 후 게시글 삭제 =================================
 @app.post('/posts/{post_id}/delete')
 def post_delete(
-    post: Post = Depends(get_post_or_404),
-    db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user),
+    post: PostDep,
+    db: SessionDep,
+    user: CurrentUserDep,
 ):
     # 로그인 사용자 정보가 없으면 로그인 화면으로 이동한다.
     if user is None:
@@ -300,10 +309,10 @@ def post_delete(
 # 예: /posts/7/comments/create → 글 번호는 URL, 댓글 내용은 Form으로 받는다.
 @app.post('/posts/{post_id}/comments/create')
 def comment_create(
+    post: PostDep,
+    db: SessionDep,
+    user: CurrentUserDep,
     content: str = Form(),
-    post: Post = Depends(get_post_or_404),
-    db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user),
 ):
     # 왼쪽 post는 Comment의 관계 속성, 오른쪽 post는 조회한 Post 객체.
     # 관계를 연결하면 저장 과정에서 comment.post_id에 게시글 번호가 반영된다.
@@ -325,8 +334,8 @@ def comment_create(
 def comment_delete(
     post_id: int, 
     comment_id: int, 
-    db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user)):
+    db: SessionDep,
+    user: CurrentUserDep):
 
     # 로그인 안한사람
     if user is None:
@@ -345,7 +354,7 @@ def comment_delete(
 
 # SIGNUP 1: 회원가입 폼 표시 (GET) ===================================
 @app.get('/signup')
-def signup_form(request: Request, user: User | None = Depends(get_current_user)):
+def signup_form(request: Request, user: CurrentUserDep):
     return templates.TemplateResponse(
         request=request, name='signup.html', context={'user': user}
     )
@@ -355,9 +364,9 @@ def signup_form(request: Request, user: User | None = Depends(get_current_user))
 @app.post('/signup')
 def signup(
     request: Request,
+    db: SessionDep,
     username: str = Form(),
     password: str = Form(),
-    db: Session = Depends(get_db),
 ):
     # 입력한 아이디로 조회한다. 결과는 User 객체 또는 None이다.
     exists = db.scalar(select(User).where(User.username == username))
@@ -384,7 +393,7 @@ def signup(
 
 # LOGIN 1: 로그인 폼 표시 (GET) ======================================
 @app.get('/login')
-def login_form(request: Request, user: User | None = Depends(get_current_user)):
+def login_form(request: Request, user: CurrentUserDep):
     return templates.TemplateResponse(
         request=request, name='login.html', context={'user': user}
     )
@@ -394,9 +403,9 @@ def login_form(request: Request, user: User | None = Depends(get_current_user)):
 @app.post('/login')
 def login(
     request: Request,
+    db: SessionDep,
     username: str = Form(),
     password: str = Form(),
-    db: Session = Depends(get_db),
 ):
     # 1. 폼에서 받은 아이디에 해당하는 사용자를 찾는다.
     user = db.scalar(select(User).where(User.username == username))
@@ -427,7 +436,7 @@ def login(
 # LOGOUT: 현재 로그인 세션과 브라우저 쿠키 삭제 =======================
 # 사용자 계정이나 게시글을 삭제하는 것은 아니다.
 @app.post('/logout')
-def logout(request: Request, db: Session = Depends(get_db)):
+def logout(request: Request, db: SessionDep):
     # 이번 요청에서 브라우저가 보낸 session_id 쿠키 값을 꺼낸다.
     session_id = request.cookies.get('session_id')
     user_session = db.get(UserSession, session_id)
@@ -444,9 +453,9 @@ def logout(request: Request, db: Session = Depends(get_db)):
 
 @app.post('/posts/{post_id}/likes')
 def post_like(
-    post: Post = Depends(get_post_or_404),
-    db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user)
+    post: PostDep,
+    db: SessionDep,
+    user: CurrentUserDep
 ):
     if user is None:
         return RedirectResponse('/login', status_code=303)
