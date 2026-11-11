@@ -27,7 +27,7 @@
     {% for comment in post.comments | sort(attribute='created_at', reverse=True) %}
         <p>
             <small>댓글 작성자: {{ comment.user.username }}</small>
-            {{ comment.content }}
+            댓글 내용: {{ comment.content }}
             <small>{{ comment.created_at.strftime('%H:%M') }}</small>
             {% if user.id == comment.user_id %}
                 <form action="/posts/{{ post.id }}/comments/{{ comment.id }}/delete" method="post">

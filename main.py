@@ -91,8 +91,14 @@ class Like(Base):
     __tablename__ = 'likes'
 
     # User(N) : Like(1) : Post(M)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
-    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'), primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey('users.id'), 
+        primary_key=True,
+    )
+    post_id: Mapped[int] = mapped_column(
+        ForeignKey('posts.id'), 
+        primary_key=True,
+    )
 
 
 # 앱 및 HTML 템플릿 설정 ============================================
@@ -427,3 +433,28 @@ def logout(request: Request, db: Session = Depends(get_db)):
     # DB 세션 삭제에 이어 브라우저에도 쿠키를 지우도록 응답한다.
     response.delete_cookie('session_id')
     return response
+
+
+@app.post('/posts/{post_id}/likes')
+def post_like(
+    post: Post = Depends(get_post_or_404),
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user)
+):
+    if user is None:
+        return RedirectResponse('/login', status_code=303)
+
+    # like가 있는지
+    result = db.get(Like, (user.id ,post.id))
+
+    if result:
+        # 좋아요가 이미 눌림 -> 다시 누르면 삭제
+        db.delete(result)
+    else:
+        # 좋아요가 아직 안눌림 -> 좋아요 추가
+        like = Like(user_id=user.id, post_id=post.id)
+        db.add(like)
+
+    db.commit()
+
+    return RedirectResponse('/posts', status_code=303)
