@@ -8,7 +8,8 @@
     <h1>전체게시물</h1>
     {% for post in posts %}
         <p>{{ post.content }}</p>
-        <small>글쓴이: {{ post.user.username }}</small>
+        <a href="/users/{{ post.user.username }}"><small>작성자: {{ post.user.username }}</small></a>
+        
         <small>댓글 {{ post.comments | length }}개</small>
         <small>좋아요 {{ post.likes | length }} 개</small>
         <small>{{ post.created_at.strftime('%Y%m%d %H:%M') }}</small>

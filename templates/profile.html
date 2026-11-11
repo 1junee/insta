@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+
+
+{% block title %} 프로필 {% endblock %}
+
+{% block content %}
+
+    <h1>{{ owner.username }}님의 프로필</h1>
+    <p>게시물 {{ posts | length }} 개</p>
+
+    <hr>
+    {% for post in posts %}
+        <a href="/posts/{{ post.id }}">
+            <p>{{ post.content }}</p>
+        </a>
+        <small>{{ post.created_at }}</small>
+    {% endfor %}
+
+{% endblock %}
