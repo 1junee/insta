@@ -13,7 +13,7 @@
 
     {% if user.id != owner.id %}
     <form action="/users/{{ owner.username }}/follows" method="post">
-        <input type="submit" value="팔로우">
+        <input type="submit" value="{% if user.id in follower_list %} 팔로잉 {% else %} 팔로우 {% endif %}">
     </form>
     {% endif %}
 

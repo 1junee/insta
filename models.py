@@ -97,11 +97,9 @@ class Follow(Base):
     # 예: (follower_id=3, following_id=7)은 3번이 7번을 팔로우한다는 뜻.
     # 반대 방향인 7번 → 3번은 별도의 행으로 저장한다.
 
-    # 팔로워 = 프로필 유저에 화살표 보내는 사람?
-    # 먼저 행동하는 사람: 팔로우를 누른 사용자
+    # 팔로우하는 사람: 화살표를 보내는 사용자 (follower → following)
     follower_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
     
-    # 팔로잉 = 프로필 유저에게 화살표 받는 사람
-    # 다음으로 대상이 되는 사람: 팔로우를 받은 사용자
+    # 팔로우 대상: 화살표를 받는 사용자
     following_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
 
