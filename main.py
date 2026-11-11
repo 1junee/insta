@@ -86,6 +86,15 @@ class UserSession(Base):
     user: Mapped['User'] = relationship()
 
 
+# 좋아요: 
+class Like(Base):
+    __tablename__ = 'likes'
+
+    # User(N) : Like(1) : Post(M)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'), primary_key=True)
+
+
 # 앱 및 HTML 템플릿 설정 ============================================
 app = FastAPI()
 templates = Jinja2Templates(directory='templates')
@@ -133,6 +142,8 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
 
     # 세션에 연결된 User 객체를 반환한다. 현재 코드에는 세션 시간 만료 검사가 없다.
     return user_session.user
+
+
 
 
 # HOME: 기본 응답 확인 ==============================================
