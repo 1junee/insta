@@ -37,6 +37,8 @@ class Post(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     user: Mapped['User'] = relationship(back_populates='posts')
 
+    likes: Mapped[list['Like']] = relationship(cascade='all, delete-orphan')
+
 
 # 댓글: post_id로 어느 게시글에 달린 댓글인지 구분한다.
 class Comment(Base):
@@ -167,13 +169,18 @@ def post_list(
     db: Session = Depends(get_db),
     user: User | None = Depends(get_current_user),
 ):
+    liked_ids = []
+    if user:
+        liked_ids = db.scalars( select(Like.post_id).where( user.id == Like.user_id ) ).all()
 
     # select로 조회 조건 생성 → scalars로 Post 객체 조회 → all로 목록 받기.
     # created_at.desc()는 최근에 작성한 글부터 정렬한다.
     posts = db.scalars(select(Post).order_by(Post.created_at.desc())).all()
     return templates.TemplateResponse(
         # context에 넣은 이름을 HTML에서 posts, user 변수로 사용할 수 있다.
-        request=request, name='list.html', context={'posts': posts, 'user': user}
+        request=request, 
+        name='list.html', 
+        context={'posts': posts, 'user': user, 'liked_ids': liked_ids}
     )
 
 
