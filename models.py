@@ -76,7 +76,9 @@ class UserSession(Base):
 class Like(Base):
     __tablename__ = 'likes'
 
-    # User(N) : Like(1) : Post(M)
+    # 누르는 사용자 → 좋아요 기록 → 대상 게시글 (User와 Post는 N:M)
+    # User(1) : Like(N), Like(N) : Post(1)
+    # user_id: 누른 사람 / post_id: 좋아요를 받은 글
     user_id: Mapped[int] = mapped_column(
         ForeignKey('users.id'), 
         primary_key=True,
@@ -85,3 +87,21 @@ class Like(Base):
         ForeignKey('posts.id'), 
         primary_key=True,
     )
+
+
+class Follow(Base):
+    __tablename__ = 'follows'
+
+    # 팔로우하는 사용자 → 팔로우 기록 → 팔로우받는 사용자 (User와 User는 N:M)
+    # 팔로우하는 User(1) : Follow(N), Follow(N) : 팔로우받는 User(1)
+    # 예: (follower_id=3, following_id=7)은 3번이 7번을 팔로우한다는 뜻.
+    # 반대 방향인 7번 → 3번은 별도의 행으로 저장한다.
+
+    # 팔로워 = 프로필 유저에 화살표 보내는 사람?
+    # 먼저 행동하는 사람: 팔로우를 누른 사용자
+    follower_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    
+    # 팔로잉 = 프로필 유저에게 화살표 받는 사람
+    # 다음으로 대상이 되는 사람: 팔로우를 받은 사용자
+    following_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+

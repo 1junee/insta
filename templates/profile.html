@@ -8,6 +8,14 @@
 
     <h1>{{ owner.username }}님의 프로필</h1>
     <p>게시물 {{ posts | length }} 개</p>
+    <p>팔로워 {{ follower_list | length }} 명</p>
+    <p>팔로잉 {{ following_list | length }} 명</p>
+
+    {% if user.id != owner.id %}
+    <form action="/users/{{ owner.username }}/follows" method="post">
+        <input type="submit" value="팔로우">
+    </form>
+    {% endif %}
 
     <hr>
     {% for post in posts %}
