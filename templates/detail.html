@@ -2,15 +2,18 @@
 
 {% block title %} 상세보기 {% endblock %}
 
-
 {% block content %}
 
     <p>{{ post.content }}</p>
+    <small>{{ post.user.username }}</small>
 
-    <a href="/posts/{{ post.id }}/edit">수정하기</a>
-    <form action="/posts/{{ post.id }}/delete" method="post">
-        <input type="submit" value="삭제하기">
-    </form>
+    <!-- 로그인 유저와 글 작성자가 일치할때  -->
+    {% if user.id == post.user_id %}
+        <a href="/posts/{{ post.id }}/edit">수정하기</a>
+        <form action="/posts/{{ post.id }}/delete" method="post">
+            <input type="submit" value="삭제하기">
+        </form>
+    {% endif %}
 
     <hr>
 
@@ -31,6 +34,5 @@
     {% else %}
         <p>첫 댓글을 달아주세요</p>
     {% endfor %}
-
 
 {% endblock %}

@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %} insta {% endblock %}</title>
-</head>
-<body>
-    <nav>
-        <a href="/posts">insta</a>
-        <a href="/posts/new">새글</a>
-        <a href="/signup">회원가입</a>
-    </nav>
-    <main>
-        {% block content %} {% endblock %}
-    </main>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %} insta {% endblock %}</title>
+    </head>
+    <body>
+        <nav>
+            <a href="/posts">insta</a>
+            {% if user %}
+                <!-- 로그인을 한경우 -->
+                <a href="/posts/new">새글</a>
+                <form action="/logout" method="post">
+                    <input type="submit" value="로그아웃">
+                </form>
+                <span>{{ user.username }}</span>
+            {% else %}
+                <!-- 로그인이 안된경우 -->
+                <a href="/signup">회원가입</a>
+                <a href="/login">로그인</a>
+            {% endif %}
+
+        </nav>
+        <main>
+            {% block content %} {% endblock %}
+        </main>
+    </body>
 </html>

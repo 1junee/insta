@@ -10,7 +10,7 @@
         <p>{{ post.content }}</p>
         <small>댓글 {{ post.comments | length }}개</small>
         <small>{{ post.created_at.strftime('%Y%m%d %H:%M') }}</small>
-        <a href="/posts/{{post.id}}">자세히</a>
+        <a href="/posts/{{ post.id }}">자세히</a>
     {% endfor %}
 
 {% endblock %}
