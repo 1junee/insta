@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-
-
 {% block title %} 프로필 {% endblock %}
 
 {% block content %}
@@ -11,10 +9,23 @@
     <p>팔로워 {{ owner.followers | length }} 명</p>
     <p>팔로잉 {{ owner.followings | length }} 명</p>
 
+    <!-- 내가 나 자신을 팔로우할 수 없도록 -->
     {% if user.id != owner.id %}
-    <form action="/users/{{ owner.username }}/follows" method="post">
-        <input type="submit" value="{% if follow %} 팔로잉 {% else %} 팔로우 {% endif %}">
-    </form>
+        <form action="/users/{{ owner.username }}/follows" method="post">
+            <input type="submit" value="{% if follow %} 팔로잉 {% else %} 팔로우 {% endif %}">
+        </form>
+    <!-- 내가 내 자신의 프로필에 들어왔을 때 -->
+    {% else %}
+        {% if user.avatar_url is none %}
+            <form action="/users/{{ user.username }}/avatar" method="post" enctype="multipart/form-data">
+                <input type="file" name="photo" accept="image/*">
+                <input type="submit">
+            </form>
+        {% else %}
+            <img src="{{ user.avatar_url }}" width="150px" height="150px">
+        {% endif %}
+        
+
     {% endif %}
 
     <hr>

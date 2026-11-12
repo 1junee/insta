@@ -1,9 +1,11 @@
 # 프로필 관련
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, UploadFile, File
 from fastapi.responses import RedirectResponse
-from deps import templates ,SessionDep, CurrentUserDep
 from sqlalchemy import select
+
 from models import User, Post, Follow
+from deps import templates ,SessionDep, CurrentUserDep
+from photos import save_photo
 
 router = APIRouter()
 
@@ -76,3 +78,16 @@ def user_follow(
 
     return RedirectResponse(f'/users/{username}', status_code=303)
 
+
+@router.post('/users/{username}/avatar')
+def user_avatar(
+    username: str,
+    db: SessionDep,
+    user: CurrentUserDep,
+    photo: UploadFile = File(),
+):
+    avatar_url = save_photo(photo)
+    user.avatar_url = avatar_url
+    db.commit()
+
+    return RedirectResponse(f'/users/{username}', status_code=303)
