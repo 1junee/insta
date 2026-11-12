@@ -11,6 +11,7 @@ app.include_router(users.router)
 
 # media 폴더의 파일을 브라우저에서 /media 주소로 볼 수 있게 연결한다.
 app.mount('/media', StaticFiles(directory='media'), name='media')
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
 # HOME: 기본 응답 확인 ==============================================
 @app.get('/')

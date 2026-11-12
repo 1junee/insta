@@ -4,12 +4,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %} insta {% endblock %}</title>
+        <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
         <nav>
             <a href="/posts">insta</a>
             {% if user %}
-                <!-- 로그인을 한경우 -->
+                <!-- 로그인을 한 경우 -->
                 <a href="/posts/new">새글</a>
                 <form action="/logout" method="post">
                     <input type="submit" value="로그아웃">
