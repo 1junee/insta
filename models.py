@@ -52,9 +52,14 @@ class User(Base):
     username: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
     # user.posts: 이 사용자가 작성한 글들. 반대편 Post.user와 연결된다.
+    # 실제 있는 컬럼은 아니고, 파이썬 객체끼리 접근 가능하게 해놓은 변수?
     posts: Mapped[list['Post']] = relationship(back_populates='user')
     # 댓글만 모아보기 - 
     # comments: Mapped[list['Comment']] = relationship(back_populates='user')
+    likes: Mapped[list['Like']] = relationship()
+    # follower -> following
+    followings: Mapped[list['Follow']] = relationship(foreign_keys='Follow.follower_id')  
+    followers: Mapped[list['Follow']] = relationship(foreign_keys='Follow.following_id')
 
 
 # 로그인 세션: 임의의 세션 ID와 사용자 번호를 DB에 연결한다.

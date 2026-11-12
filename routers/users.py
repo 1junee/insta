@@ -24,10 +24,14 @@ def profile(
 
     # 팔로워: 다른 사람 → 프로필 주인. 받는 쪽(following_id)이 owner인 관계들.
     # User 목록이 아니라 Follow id 행 목록이며, 화면에서 length로 인원수를 센다.
-    follower_list = db.scalars( select(Follow.follower_id).where(Follow.following_id == owner.id) ).all()
-
+    # follower_list = db.scalars( select(Follow.follower_id).where(Follow.following_id == owner.id) ).all()
     # 팔로잉: 프로필 주인 → 다른 사람. 보내는 쪽(follower_id)이 owner인 관계들.
-    following_list = db.scalars( select(Follow.following_id).where(Follow.follower_id == owner.id) ).all()
+    # following_list = db.scalars( select(Follow.following_id).where(Follow.follower_id == owner.id) ).all()
+
+    # 모델에 relationship 적용
+    follow = None
+    if user:
+        follow = db.get(Follow, (user.id, owner.id))
 
     return templates.TemplateResponse(
         request=request,
@@ -36,8 +40,9 @@ def profile(
             'owner': owner,
             'posts': posts,
             'user': user,
-            'follower_list': follower_list,
-            'following_list': following_list,
+            # 'follower_list': follower_list,
+            # 'following_list': following_list,
+            'follow': follow,
         }
     )
 

@@ -22,9 +22,13 @@ def post_list(
     liked_ids = []
 
     if user:
-        liked_ids = db.scalars(
-            select(Like.post_id).where(Like.user_id == user.id)
-        ).all()
+        # liked_ids = db.scalars(
+        #     select(Like.post_id).where(Like.user_id == user.id)
+        # ).all()
+
+        # User(Base) 에 likes를 relations로 추가함
+        # user.likes => selec(Like) where(user.id == Like.user_id)
+        liked_ids = [like.post_id for like in user.likes]
 
     # 최근 작성한 게시글부터 조회
     posts = db.scalars(
