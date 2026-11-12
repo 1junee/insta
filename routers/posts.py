@@ -1,11 +1,12 @@
 # 설치한 모듈 들
-from fastapi import APIRouter, Request, Form, HTTPException
+from fastapi import APIRouter, Request, Form, HTTPException, File, UploadFile
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 
 # 우리가 만든 파일
 from models import Post, Comment, Like
 from deps import SessionDep, PostDep, CurrentUserDep, templates
+from photos import save_photo
 
 # app = FastAPI()
 router = APIRouter()
@@ -69,7 +70,11 @@ def post_create(
     db: SessionDep,
     user: CurrentUserDep,
     content: str = Form(),
+    photo: UploadFile = File(),
 ):
+    # print(photo.filename, photo.content_type)
+    img_url = save_photo(photo)
+
     # 로그인 사용자 정보가 없으면 로그인 화면으로 이동한다.
     if user is None:
         # 303 응답: 브라우저가 지정된 주소를 GET으로 다시 요청하도록 안내한다.
