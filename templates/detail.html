@@ -3,6 +3,9 @@
 {% block title %} 상세보기 {% endblock %}
 
 {% block content %}
+    {% if post.image_url %}
+    <img src="{{ post.image_url }}">
+    {% endif %}
 
     <p>{{ post.content }}</p>
     <small>글쓴이: {{ post.user.username }}</small>

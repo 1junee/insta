@@ -9,8 +9,8 @@
     {% for post in posts %}
         {% if post.image_url %}
         <img src="{{ post.image_url }}">
-        <p>{{ post.content }}</p>
         {% endif %}
+        <p>{{ post.content }}</p>
         <a href="/users/{{ post.user.username }}"><small>작성자: {{ post.user.username }}</small></a>
         
         <small>댓글 {{ post.comments | length }}개</small>

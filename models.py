@@ -51,6 +51,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     # unique=True: 동일한 로그인 아이디가 중복 저장되지 않게 한다.
     username: Mapped[str] = mapped_column(unique=True)
+    avatar_url: Mapped[str | None]
     password_hash: Mapped[str]
     # user.posts: 이 사용자가 작성한 글들. 반대편 Post.user와 연결된다.
     # 실제 있는 컬럼은 아니고, 파이썬 객체끼리 접근 가능하게 해놓은 변수?
