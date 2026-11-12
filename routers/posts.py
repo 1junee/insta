@@ -73,7 +73,7 @@ def post_create(
     photo: UploadFile = File(),
 ):
     # print(photo.filename, photo.content_type)
-    img_url = save_photo(photo)
+    image_url = save_photo(photo)
 
     # 로그인 사용자 정보가 없으면 로그인 화면으로 이동한다.
     if user is None:
@@ -81,7 +81,7 @@ def post_create(
         return RedirectResponse('/login', status_code=303)
 
     # 현재 로그인한 User를 작성자로 연결한다. 저장 시 post.user_id에 반영된다.
-    post = Post(content=content, user=user)
+    post = Post(content=content, user=user, image_url=image_url)
     # 객체 생성만으로 저장되지는 않는다. add로 등록하고 commit으로 DB에 확정한다.
     db.add(post)
     db.commit()

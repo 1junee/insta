@@ -9,6 +9,7 @@ class Post(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     content: Mapped[str]
+    image_url: Mapped[str | None]
     # 작성 시각을 생략하면 DB가 현재 시각을 기본값으로 넣는다.
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     # post.comments: 이 글의 id를 post_id로 가진 댓글들. DB 열이 아닌 관계 속성이다.
