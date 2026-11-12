@@ -5,6 +5,10 @@
 {% block content %}
 
     <h1>{{ owner.username }}님의 프로필</h1>
+    {% if user.avatar_url%}
+        <img src="{{ user.avatar_url }}" width="150px" height="150px">
+        <form action=""></form>
+    {% endif %}
     <p>게시물 {{ posts | length }} 개</p>
     <p>팔로워 {{ owner.followers | length }} 명</p>
     <p>팔로잉 {{ owner.followings | length }} 명</p>
@@ -21,11 +25,7 @@
                 <input type="file" name="photo" accept="image/*">
                 <input type="submit">
             </form>
-        {% else %}
-            <img src="{{ user.avatar_url }}" width="150px" height="150px">
         {% endif %}
-        
-
     {% endif %}
 
     <hr>
