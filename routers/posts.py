@@ -236,4 +236,4 @@ def post_like(
 
     db.commit()
 
-    return RedirectResponse('/posts', status_code=303)
+    return RedirectResponse(f'/posts#post-{post.id}', status_code=303)

@@ -86,8 +86,27 @@ def user_avatar(
     user: CurrentUserDep,
     photo: UploadFile = File(),
 ):
-    avatar_url = save_photo(photo)
-    user.avatar_url = avatar_url
-    db.commit()
+    if user is None:
+        return RedirectResponse('/login', status_code=303)
+    
+    if user.username == username:
+        avatar_url = save_photo(photo)
+        user.avatar_url = avatar_url
+        db.commit()
 
     return RedirectResponse(f'/users/{username}', status_code=303)
+
+
+@router.post('/users/{username}/avatar/delete')
+def user_avatar_del(
+    username: str,
+    db: SessionDep,
+    user: CurrentUserDep,
+):
+    if user is None:
+        return RedirectResponse('/login', status_code=303)
+    if user.username == username:
+        user.avatar_url = None
+        db.commit()
+    return RedirectResponse(f'/users/{username}', status_code=303)
+    
