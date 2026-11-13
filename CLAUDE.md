@@ -11,3 +11,6 @@
 
 - `SCREENS.md`가 `.py`(`routers/`)와 화면의 약속이다. 템플릿 이름 · 변수 이름 · 폼 칸 `name` · `action` · 주소를 그대로 쓴다.
 - 디자인은 `design/DESIGN.md`를 따른다. 꾸밀 때는 `insta-design` 스킬을 쓴다.
+- 레퍼런스 화면은 `ref/`에 있다. 인스타그램 웹 다크 모드 캡처지만, 화면은 라이트 모드로 만든다.
+- `DESIGN.md` · `SCREENS.md`는 학생과 대화로 정한 것만 적는다. Claude가 혼자 정해 채우지 않는다.
+- `SCREENS.md`에 적을 변수 이름은 `models.py` · `routers/`를 읽어 확인한 것만 적는다.
