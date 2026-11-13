@@ -3,12 +3,20 @@
 {% block title %} 수정하기 {% endblock %}
 
 {% block content %}
-    <h1>EDIT</h1>
-    <form action="/posts/{{ post.id }}/update" method="post">
-        <label for="content">내용</label>
-        <textarea name="content" id="content" required>
-      {{post.content}}
-    </textarea>
-        <input type="submit">
-    </form>
+    <!-- 가운데 좁은 상자 (새 글과 같은 모양) -->
+    <div class="form-box">
+        <h1 class="form-title">정보 수정<span class="visually-hidden"> (EDIT)</span></h1>
+
+        <!-- 사진은 바꿀 수 없어서 보여 주기만 -->
+        {% if post.image_url %}
+            <img class="edit-photo object-fit-cover" src="{{ post.image_url }}" alt="">
+        {% endif %}
+
+        <form class="d-flex flex-column gap-2" action="/posts/{{ post.id }}/update" method="post">
+            <label class="form-label-insta" for="content">내용</label>
+            <textarea class="insta-input" name="content" id="content" rows="5" required>{{post.content}}</textarea>
+            <input class="insta-button insta-button-blue form-submit" type="submit" value="완료">
+        </form>
+        <a class="form-cancel text-decoration-none" href="/posts/{{ post.id }}">취소</a>
+    </div>
 {% endblock %}

@@ -1,3 +1,787 @@
+/* =========================================================
+   insta — design/DESIGN.md 의 값
+   (Bootstrap 의 --bs- 변수는 바꾸지 않고, insta 전용 변수를 쓴다)
+   ========================================================= */
+:root {
+    --insta-bg: #ffffff;          /* 바탕: 흰색만 */
+    --insta-text: #000000;        /* 글자 */
+    --insta-muted: #737373;       /* 보조 글자 */
+    --insta-line: #dbdbdb;        /* 구분선 · 입력 칸 테두리 */
+    --insta-button: #efefef;      /* 회색 버튼 */
+    --insta-blue: #0095f6;        /* 강조 */
+    --insta-red: #ff3040;         /* 좋아요 누른 하트 */
+    --insta-nav-width: 72px;      /* 왼쪽 메뉴 폭 */
+    --insta-nav-height: 56px;     /* 좁은 화면 아래쪽 막대 높이 */
+}
+
+/* ---------- 스크롤 ----------
+   Bootstrap 은 :root 에 scroll-behavior: smooth 를 켜 둔다.
+   좋아요 뒤 /posts#post-번호 로 돌아올 때 맨 위에서 스르륵 내려가지 않고
+   바로 그 자리에 있도록 끈다. */
+:root {
+    scroll-behavior: auto;
+}
+
+/* ---------- 글자 · 바탕 ---------- */
 body {
-    background-color: gray;
+    background-color: var(--insta-bg);
+    color: var(--insta-text);
+    font-size: 14px;
+}
+
+/* ---------- 왼쪽 세로 메뉴 ---------- */
+.side-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: var(--insta-nav-width);
+    height: 100vh;
+    padding: 20px 0;
+    gap: 8px;
+    align-items: center;
+    background-color: var(--insta-bg);
+    border-color: var(--insta-line) !important;
+}
+
+/* 메뉴 한 칸: 아이콘 하나 크기의 정사각형 */
+.side-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--insta-text);
+    font-size: 24px;
+    text-decoration: none;
+}
+
+.side-link:hover,
+.side-link:focus-visible {
+    background-color: var(--insta-button);
+    color: var(--insta-text);
+}
+
+/* 마우스를 올리면 오른쪽에 나오는 메뉴 이름 */
+.side-label {
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 4px 10px;
+    border-radius: 6px;
+    background-color: var(--insta-text);
+    color: var(--insta-bg);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+}
+
+.side-link:hover .side-label,
+.side-link:focus-visible .side-label {
+    opacity: 1;
+}
+
+/* 로그아웃은 맨 아래 */
+.side-bottom {
+    margin-top: auto;
+}
+
+/* ---------- 로고: 점이 빨간 i ---------- */
+.side-logo {
+    margin-bottom: 16px;
+}
+
+.logo-mark {
+    position: relative;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.logo-mark::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--insta-red);
+    transform: translateX(-50%);
+}
+
+/* ---------- 프로필 사진 동그라미 ---------- */
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    object-fit: cover;
+    overflow: hidden;
+}
+
+.avatar-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+}
+
+.avatar-md {
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
+}
+
+.avatar-lg {
+    width: 150px;
+    height: 150px;
+    font-size: 104px;
+}
+
+/* 사진을 안 올렸을 때: 연회색 동그라미 + 사람 모양 */
+.avatar-default {
+    background-color: var(--insta-line);
+    color: var(--insta-bg);
+}
+
+.avatar-default .bi {
+    transform: translateY(15%);
+}
+
+/* ---------- 내용 자리: 메뉴 오른쪽 ---------- */
+.page {
+    margin-left: var(--insta-nav-width);
+    padding: 24px 16px;
+}
+
+/* =========================================================
+   전체 글 피드 (list.html) — ref1
+   ========================================================= */
+.feed {
+    max-width: 470px;
+    margin: 0 auto;
+}
+
+/* 게시물 하나: 테두리 · 상자 없이, 글 사이에 연한 구분선 */
+.post {
+    padding: 16px 0 20px;
+    border-bottom: 1px solid var(--insta-line);
+    scroll-margin-top: 8px;
+}
+
+.post:last-child {
+    border-bottom: 0;
+}
+
+/* 1. 머리 */
+.post-head {
+    margin-bottom: 12px;
+}
+
+.post-name {
+    color: var(--insta-text);
+}
+
+.post-name:hover {
+    color: var(--insta-muted);
+}
+
+.post-dot,
+.post-time {
+    color: var(--insta-muted);
+    font-size: 12px;
+}
+
+/* 2. 사진: 4:5, 가운데 기준으로 채움, 모서리 살짝 둥글게 */
+.post-photo {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 4px;
+    background-color: var(--insta-button);
+}
+
+/* 3. 아이콘 줄 */
+.post-actions {
+    margin: 8px 0 6px;
+}
+
+.post-like {
+    margin: 0;
+}
+
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px;
+    border: 0;
+    background: none;
+    color: var(--insta-text);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.icon-button:hover {
+    color: var(--insta-muted);
+}
+
+.is-liked {
+    color: var(--insta-red);
+}
+
+.post-count {
+    margin: 0 12px 0 2px;
+    font-weight: 600;
+}
+
+/* 4. 본문: 줄바꿈을 그대로 보인다 */
+.post-text {
+    margin: 0 0 4px;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+/* 5. 상세 링크 */
+.post-more,
+.feed-empty {
+    color: var(--insta-muted);
+}
+
+.post-more:hover {
+    color: var(--insta-text);
+}
+
+.feed-empty {
+    padding: 48px 0;
+    text-align: center;
+}
+
+/* =========================================================
+   프로필 (profile.html) — ref2 위쪽 · ref3 격자
+   ========================================================= */
+.profile {
+    max-width: 935px;
+    margin: 0 auto;
+}
+
+/* 위쪽: 사진 · 이름 · 숫자 */
+.profile-head {
+    gap: 48px;
+    padding: 16px 0 24px 32px;
+}
+
+.profile-name {
+    margin: 0 0 16px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* 버튼 줄 */
+.profile-actions {
+    padding: 0 0 24px 32px;
+}
+
+.profile-actions form {
+    margin: 0;
+}
+
+/* 회색 둥근 버튼 (ref2 "프로필 편집") */
+.insta-button {
+    padding: 7px 16px;
+    border: 0;
+    border-radius: 8px;
+    background-color: var(--insta-button);
+    color: var(--insta-text);
+    font-weight: 600;
+}
+
+.insta-button:hover {
+    background-color: var(--insta-line);
+}
+
+/* 파란 버튼 (팔로우 · 올리기) */
+.insta-button-blue {
+    background-color: var(--insta-blue);
+    color: var(--insta-bg);
+}
+
+.insta-button-blue:hover {
+    background-color: var(--insta-blue);
+    opacity: 0.85;
+}
+
+/* 내 프로필의 동그라미 버튼: 누르면 "프로필 사진 바꾸기" 창 */
+.avatar-button {
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.avatar-button:hover {
+    opacity: 0.85;
+}
+
+/* "프로필 사진 바꾸기" 창 (Bootstrap 모달) */
+.avatar-modal .modal-content {
+    border: 0;
+    border-radius: 12px;
+}
+
+.avatar-modal .modal-header {
+    justify-content: center;
+    border-color: var(--insta-line);
+}
+
+.avatar-modal .modal-footer {
+    padding: 0;
+    border-color: var(--insta-line);
+}
+
+/* 창 안의 한 줄짜리 글자 버튼 (현재 사진 삭제 · 취소) */
+.modal-row {
+    width: 100%;
+    margin: 0;
+    padding: 12px;
+    border: 0;
+    background: none;
+    color: var(--insta-text);
+    font-weight: 600;
+}
+
+.modal-row:hover {
+    background-color: var(--insta-button);
+}
+
+/* 올리기 폼과 삭제 버튼 사이: 선 하나로 나눈다 */
+.avatar-delete {
+    margin: 16px -16px -16px;
+    border-top: 1px solid var(--insta-line);
+}
+
+/* 파일 고르기 칸 */
+.profile-file {
+    width: 100%;
+    color: var(--insta-muted);
+}
+
+.profile-file::file-selector-button {
+    margin-right: 8px;
+    padding: 7px 12px;
+    border: 1px solid var(--insta-line);
+    border-radius: 8px;
+    background-color: var(--insta-bg);
+    color: var(--insta-text);
+}
+
+/* 위쪽과 격자 사이 선 */
+.profile-line {
+    margin: 0 0 4px;
+    border-color: var(--insta-line);
+    opacity: 1;
+}
+
+/* 아래쪽: 3열 격자, 칸 사이 2px */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+}
+
+/* 칸 하나: 세로로 긴 3:4 */
+.grid-tile {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background-color: var(--insta-button);
+    color: var(--insta-text);
+    text-decoration: none;
+}
+
+.grid-photo {
+    width: 100%;
+    height: 100%;
+}
+
+/* 사진 없는 글: 본문 글자를 칸 안에 */
+.grid-text {
+    margin: 0;
+    padding: 12px;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+/* 마우스를 올리면: 어둡게 덮고 ♥ 수 · 💬 수 */
+.grid-hover {
+    position: absolute;
+    inset: 0;
+    gap: 24px;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: var(--insta-bg);
+    font-size: 16px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.grid-tile:hover .grid-hover,
+.grid-tile:focus-visible .grid-hover {
+    opacity: 1;
+}
+
+.grid-empty {
+    grid-column: 1 / -1;
+    padding: 48px 0;
+    color: var(--insta-muted);
+    text-align: center;
+}
+
+/* =========================================================
+   폼 상자 (new.html, 나중에 edit · login · signup 도 같이 쓴다)
+   ========================================================= */
+.form-box {
+    max-width: 400px;
+    margin: 24px auto;
+    padding: 24px;
+    border: 1px solid var(--insta-line);
+    border-radius: 12px;
+}
+
+.form-title {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.form-label-insta {
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+/* 연회색 테두리 입력 칸 */
+.insta-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--insta-line);
+    border-radius: 8px;
+    background-color: var(--insta-bg);
+    color: var(--insta-text);
+    resize: vertical;
+}
+
+.insta-input:focus {
+    border-color: var(--insta-muted);
+    outline: none;
+}
+
+.form-submit {
+    margin-top: 16px;
+    padding: 10px;
+}
+
+/* 로그인 · 가입: 로고 */
+.form-box-auth {
+    margin-bottom: 10px;
+    padding: 40px 40px 24px;
+    text-align: center;
+}
+
+.form-logo {
+    margin: 0 0 24px;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.form-logo .logo-mark {
+    font-size: inherit;
+}
+
+.form-logo .logo-mark::before {
+    top: -4px;
+    width: 10px;
+    height: 10px;
+}
+
+.form-lead {
+    margin: -8px 0 20px;
+    color: var(--insta-muted);
+    font-weight: 600;
+}
+
+/* 오류 문구: 느낌표 + 검정 글자 */
+.form-error {
+    margin: 16px 0 0;
+    font-size: 13px;
+}
+
+/* 아래 작은 상자: "계정이 없으신가요? 가입하기" */
+.form-box-small {
+    margin-top: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+.form-link {
+    color: var(--insta-blue);
+    font-weight: 600;
+}
+
+.form-link:hover {
+    color: var(--insta-blue);
+    text-decoration: underline !important;
+}
+
+/* 수정: 사진 미리 보기 · 취소 */
+.edit-photo {
+    display: block;
+    width: 120px;
+    aspect-ratio: 4 / 5;
+    margin: 0 auto 8px;
+    border-radius: 4px;
+}
+
+.form-cancel {
+    display: block;
+    margin-top: 12px;
+    color: var(--insta-muted);
+    font-weight: 600;
+    text-align: center;
+}
+
+.form-cancel:hover {
+    color: var(--insta-text);
+}
+
+/* =========================================================
+   상세 (detail.html) — 왼쪽 사진 · 오른쪽 칸
+   ========================================================= */
+.detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    max-width: 935px;
+    margin: 0 auto;
+    border: 1px solid var(--insta-line);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* 사진 없는 글: 오른쪽 칸 하나만, 폭 좁게 */
+.detail-no-photo {
+    grid-template-columns: 1fr;
+    max-width: 470px;
+}
+
+.detail-photo {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background-color: var(--insta-button);
+}
+
+/* 오른쪽 칸 높이 = 사진 높이 (댓글이 많아도 칸이 길어지지 않고 안에서 스크롤) */
+.detail-side {
+    height: 0;
+    min-height: 100%;
+    border-left: 1px solid var(--insta-line);
+}
+
+.detail-no-photo .detail-side {
+    height: auto;
+    min-height: 0;
+    border-left: 0;
+}
+
+/* 머리 */
+.detail-head {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--insta-line);
+}
+
+/* ··· 버튼: 머리 맨 오른쪽 */
+.detail-more {
+    margin-left: auto;
+    font-size: 20px;
+}
+
+/* 본문 + 댓글 목록: 남는 높이를 다 쓰고, 넘치면 이 안에서 스크롤 */
+.detail-comments {
+    flex: 1 1 0;
+    min-height: 160px;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.comment {
+    margin-bottom: 16px;
+}
+
+.comment-text {
+    margin: 4px 0 0;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.comment-meta {
+    margin-top: 4px;
+    color: var(--insta-muted);
+    font-size: 12px;
+}
+
+.comment-meta form {
+    margin: 0;
+}
+
+.comment-empty {
+    margin: 0;
+    color: var(--insta-muted);
+    text-align: center;
+}
+
+/* 좋아요 수 · 시각 */
+.detail-info {
+    padding: 12px 16px;
+    border-top: 1px solid var(--insta-line);
+}
+
+.detail-likes {
+    margin: 0 0 4px;
+    font-weight: 600;
+}
+
+/* 댓글 입력: 테두리 없는 칸 + 파란 글자 "게시" */
+.comment-form {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--insta-line);
+}
+
+.comment-input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: none;
+}
+
+.comment-login {
+    color: var(--insta-muted);
+}
+
+/* 글자만 있는 버튼 (댓글 삭제 · 게시) */
+.text-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--insta-muted);
+    font-size: inherit;
+    font-weight: 600;
+}
+
+.text-button:hover {
+    color: var(--insta-text);
+}
+
+.text-button-blue,
+.text-button-blue:hover {
+    color: var(--insta-blue);
+}
+
+/* 창 안의 줄 사이 선 (··· 메뉴) */
+.modal-line {
+    margin: 0;
+    border-top: 1px solid var(--insta-line);
+}
+
+/* ---------- 좁은 화면: 아래쪽 가로 막대 ---------- */
+@media (max-width: 767.98px) {
+    .side-nav {
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        height: var(--insta-nav-height);
+        padding: 0 8px;
+        flex-direction: row !important;
+        justify-content: space-around;
+        border-right: 0 !important;
+        border-top: 1px solid var(--insta-line);
+    }
+
+    .side-logo,
+    .side-label {
+        display: none;
+    }
+
+    .side-bottom {
+        margin-top: 0;
+    }
+
+    .page {
+        margin-left: 0;
+        padding-bottom: calc(var(--insta-nav-height) + 24px);
+    }
+
+    /* 프로필: 사진을 줄이고 옆 여백을 줄인다 */
+    .avatar-lg {
+        width: 77px;
+        height: 77px;
+        font-size: 54px;
+    }
+
+    .profile-head {
+        gap: 24px;
+        padding-left: 0;
+    }
+
+    .profile-stats {
+        gap: 16px;
+    }
+
+    .profile-actions {
+        padding-left: 0;
+    }
+
+    /* 상세: 사진 위 · 칸 아래로 쌓는다 */
+    .detail {
+        grid-template-columns: 1fr;
+        max-width: 470px;
+    }
+
+    .detail-side {
+        height: auto;
+        min-height: 0;
+        border-left: 0;
+        border-top: 1px solid var(--insta-line);
+    }
+
+    .detail-comments {
+        flex: none;
+        overflow-y: visible;
+    }
+}
+
+/* 마우스가 없는 화면(폰): 격자 위 덮개를 쓰지 않는다 */
+@media (hover: none) {
+    .grid-hover {
+        display: none !important;
+    }
 }

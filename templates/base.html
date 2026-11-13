@@ -1,30 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %} insta {% endblock %}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
         <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
-        <nav>
-            <a href="/posts">insta</a>
+        <!-- 왼쪽 세로 메뉴: 평소에는 아이콘만, 마우스를 올리면 이름이 나온다 -->
+        <nav class="side-nav d-flex flex-column border-end" aria-label="메뉴">
+            <a class="side-link side-logo" href="/posts">
+                <span class="logo-mark" aria-hidden="true">ı</span>
+                <span class="side-label">insta</span>
+            </a>
+
+            <a class="side-link" href="/posts">
+                <i class="bi bi-house-door" aria-hidden="true"></i>
+                <span class="side-label">홈</span>
+            </a>
             {% if user %}
                 <!-- 로그인을 한 경우 -->
-                <a href="/posts/new">새글</a>
-                <form action="/logout" method="post">
-                    <input type="submit" value="로그아웃">
+                <a class="side-link" href="/posts/new">
+                    <i class="bi bi-plus-square" aria-hidden="true"></i>
+                    <span class="side-label">새글</span>
+                </a>
+                <a class="side-link" href="/users/{{ user.username }}">
+                    {% if user.avatar_url %}
+                        <img class="avatar avatar-sm rounded-circle" src="{{ user.avatar_url }}" alt="">
+                    {% else %}
+                        <span class="avatar avatar-sm avatar-default rounded-circle" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+                    {% endif %}
+                    <span class="side-label">{{ user.username }}</span>
+                </a>
+                <form class="side-bottom m-0" action="/logout" method="post">
+                    <button class="side-link" type="submit">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                        <span class="side-label">로그아웃</span>
+                    </button>
                 </form>
-                <span>로그인 사용자: {{ user.username }}</span>
             {% else %}
                 <!-- 로그인이 안된경우 -->
-                <a href="/signup">회원가입</a>
-                <a href="/login">로그인</a>
+                <a class="side-link" href="/signup">
+                    <i class="bi bi-person-plus" aria-hidden="true"></i>
+                    <span class="side-label">회원가입</span>
+                </a>
+                <a class="side-link" href="/login">
+                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                    <span class="side-label">로그인</span>
+                </a>
             {% endif %}
-
         </nav>
-        <main>
+
+        <main class="page">
             {% block content %} {% endblock %}
         </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     </body>
 </html>

@@ -4,36 +4,92 @@
 
 {% block content %}
 
-    <h1>{{ owner.username }}님의 프로필</h1>
-    {% if user.avatar_url%}
-        <img src="{{ user.avatar_url }}" width="150px" height="150px">
-        <form action=""></form>
-    {% endif %}
-    <p>게시물 {{ posts | length }} 개</p>
-    <p>팔로워 {{ owner.followers | length }} 명</p>
-    <p>팔로잉 {{ owner.followings | length }} 명</p>
+<div class="profile">
 
-    <!-- 내가 나 자신을 팔로우할 수 없도록 -->
-    {% if user.id != owner.id %}
-        <form action="/users/{{ owner.username }}/follows" method="post">
-            <input type="submit" value="{% if follow %} 팔로잉 {% else %} 팔로우 {% endif %}">
-        </form>
-    <!-- 내가 내 자신의 프로필에 들어왔을 때 -->
-    {% else %}
-        {% if user.avatar_url is none %}
-            <form action="/users/{{ user.username }}/avatar" method="post" enctype="multipart/form-data">
-                <input type="file" name="photo" accept="image/*">
-                <input type="submit">
-            </form>
+    <!-- 위쪽: 프로필 사진 · 이름 · 숫자 (ref2) -->
+    <header class="profile-head d-flex align-items-center">
+        <!-- 내 프로필이면 동그라미가 버튼: 누르면 아래 "프로필 사진 바꾸기" 창이 열린다 -->
+        {% if user.id == owner.id %}
+        <button class="avatar-button rounded-circle" type="button" data-bs-toggle="modal" data-bs-target="#avatar-modal" aria-label="프로필 사진 바꾸기">
         {% endif %}
-    {% endif %}
+            {% if owner.avatar_url%}
+                <img class="avatar avatar-lg rounded-circle" src="{{ owner.avatar_url }}" alt="">
+            {% else %}
+                <span class="avatar avatar-lg avatar-default rounded-circle" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+            {% endif %}
+        {% if user.id == owner.id %}
+        </button>
+        {% endif %}
 
-    <hr>
-    {% for post in posts %}
-        <a href="/posts/{{ post.id }}">
-            <p>{{ post.content }}</p>
-        </a>
-        <small>{{ post.created_at }}</small>
-    {% endfor %}
+        <div class="profile-info">
+            <h1 class="profile-name">{{ owner.username }}<span class="visually-hidden">님의 프로필</span></h1>
+            <ul class="profile-stats">
+                <li>게시물 <strong>{{ posts | length }}</strong></li>
+                <li>팔로워 <strong>{{ owner.followers | length }}</strong></li>
+                <li>팔로잉 <strong>{{ owner.followings | length }}</strong></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- 남의 프로필이면 팔로우 버튼, 내 프로필이면 "프로필 사진 바꾸기" 창(평소엔 숨어 있음) -->
+    <div class="profile-actions">
+        <!-- 내가 나 자신을 팔로우할 수 없도록 -->
+        {% if user.id != owner.id %}
+            <form action="/users/{{ owner.username }}/follows" method="post">
+                <input class="insta-button{% if not follow %} insta-button-blue{% endif %}" type="submit" value="{% if follow %} 팔로잉 {% else %} 팔로우 {% endif %}">
+            </form>
+        <!-- 내가 내 자신의 프로필에 들어왔을 때 -->
+        {% else %}
+            <div class="modal fade avatar-modal" id="avatar-modal" tabindex="-1" aria-labelledby="avatar-modal-title" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title fs-5" id="avatar-modal-title">프로필 사진 바꾸기</h2>
+                        </div>
+                        <div class="modal-body">
+                            <!-- 올리기 · 바꾸기: 늘 보인다 (사진이 있으면 새 사진으로 덮어쓴다) -->
+                            <form class="d-flex flex-column gap-2" action="/users/{{ user.username }}/avatar" method="post" enctype="multipart/form-data">
+                                <label class="visually-hidden" for="avatar-photo">프로필 사진 파일</label>
+                                <input class="profile-file" id="avatar-photo" type="file" name="photo" accept="image/*" required>
+                                <input class="insta-button insta-button-blue" type="submit" value="{% if user.avatar_url %}사진 바꾸기{% else %}사진 올리기{% endif %}">
+                            </form>
+                            <!-- 삭제: 사진이 있을 때만 -->
+                            {% if user.avatar_url %}
+                                <form class="avatar-delete" action="/users/{{ owner.username }}/avatar/delete" method="post">
+                                    <input class="modal-row" type="submit" value="현재 사진 삭제">
+                                </form>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="modal-row" type="button" data-bs-dismiss="modal">취소</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <hr class="profile-line">
+
+    <!-- 아래쪽: 3열 격자 (ref3) — 마우스를 올리면 ♥ 수 · 💬 수 -->
+    <div class="profile-grid">
+        {% for post in posts %}
+            <a class="grid-tile" href="/posts/{{ post.id }}">
+                {% if post.image_url %}
+                    <img class="grid-photo object-fit-cover" src="{{ post.image_url }}" alt="">
+                {% endif %}
+                <p class="grid-text{% if post.image_url %} visually-hidden{% endif %}">{{ post.content }}</p>
+                <small class="visually-hidden">{{ post.created_at }}</small>
+                <span class="grid-hover d-flex align-items-center justify-content-center">
+                    <span><i class="bi bi-heart-fill" aria-hidden="true"></i> <span class="visually-hidden">좋아요</span>{{ post.likes | length }}</span>
+                    <span><i class="bi bi-chat-fill" aria-hidden="true"></i> <span class="visually-hidden">댓글</span>{{ post.comments | length }}</span>
+                </span>
+            </a>
+        {% else %}
+            <p class="grid-empty">아직 게시물이 없습니다.</p>
+        {% endfor %}
+    </div>
+
+</div>
 
 {% endblock %}

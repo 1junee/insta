@@ -3,44 +3,106 @@
 {% block title %} 상세보기 {% endblock %}
 
 {% block content %}
+
+<!-- 왼쪽 사진 · 오른쪽 칸 (사진 없는 글이면 오른쪽 칸만) -->
+<div class="detail{% if not post.image_url %} detail-no-photo{% endif %}">
+
     {% if post.image_url %}
-    <img src="{{ post.image_url }}">
+    <img class="detail-photo object-fit-cover" src="{{ post.image_url }}" alt="">
     {% endif %}
 
-    <p>{{ post.content }}</p>
-    <small>글쓴이: {{ post.user.username }}</small>
+    <section class="detail-side d-flex flex-column">
 
-    <!-- 로그인 유저와 글 작성자가 일치할때  -->
-    {% if user and user.id == post.user_id %}
-        <a href="/posts/{{ post.id }}/edit">수정하기</a>
-        <form action="/posts/{{ post.id }}/delete" method="post">
-            <input type="submit" value="삭제하기">
-        </form>
-    {% endif %}
+        <!-- 머리: 프로필 사진 · 이름 · (내 글이면) ··· -->
+        <header class="detail-head d-flex align-items-center gap-2">
+            <a href="/users/{{ post.user.username }}" tabindex="-1" aria-hidden="true">
+                {% if post.user.avatar_url %}
+                    <img class="avatar avatar-md rounded-circle" src="{{ post.user.avatar_url }}" alt="">
+                {% else %}
+                    <span class="avatar avatar-md avatar-default rounded-circle"><i class="bi bi-person-fill"></i></span>
+                {% endif %}
+            </a>
+            <a class="post-name fw-semibold text-decoration-none" href="/users/{{ post.user.username }}"><small class="visually-hidden">글쓴이: </small>{{ post.user.username }}</a>
 
-    <hr>
+            <!-- 로그인 유저와 글 작성자가 일치할때  -->
+            {% if user and user.id == post.user_id %}
+                <button class="icon-button detail-more" type="button" data-bs-toggle="modal" data-bs-target="#post-menu" aria-label="게시물 메뉴">
+                    <i class="bi bi-three-dots" aria-hidden="true"></i>
+                </button>
 
-    {% if user %}
-        <form action="/posts/{{ post.id }}/comments/create" method="post">
-            <input type="text" name="content">
-            <input type="submit" value="댓글등록">
-        </form>
-    {% endif %}
-
-    {% for comment in post.comments | sort(attribute='created_at', reverse=True) %}
-        <p>
-            <small>댓글 작성자: {{ comment.user.username }}</small>
-            댓글 내용: {{ comment.content }}
-            <small>{{ comment.created_at.strftime('%H:%M') }}</small>
-            {% if user.id == comment.user_id %}
-                <form action="/posts/{{ post.id }}/comments/{{ comment.id }}/delete" method="post">
-                    <input type="submit" value="del">
-                </form>
+                <!-- ··· 를 누르면 뜨는 창: 수정 / 삭제 / 취소 -->
+                <div class="modal fade avatar-modal" id="post-menu" tabindex="-1" aria-label="게시물 메뉴" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-sm">
+                        <div class="modal-content">
+                            <a class="modal-row text-center text-decoration-none" href="/posts/{{ post.id }}/edit">수정하기</a>
+                            <form class="modal-line" action="/posts/{{ post.id }}/delete" method="post">
+                                <input class="modal-row" type="submit" value="삭제하기">
+                            </form>
+                            <button class="modal-row modal-line" type="button" data-bs-dismiss="modal">취소</button>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
-        </p>
+        </header>
 
-    {% else %}
-        <p>첫 댓글을 달아주세요</p>
-    {% endfor %}
+        <!-- 본문 + 댓글 목록 (길면 이 칸 안에서 스크롤) -->
+        <div class="detail-comments">
+            <div class="comment d-flex gap-2">
+                <a href="/users/{{ post.user.username }}" tabindex="-1" aria-hidden="true">
+                    {% if post.user.avatar_url %}
+                        <img class="avatar avatar-md rounded-circle" src="{{ post.user.avatar_url }}" alt="">
+                    {% else %}
+                        <span class="avatar avatar-md avatar-default rounded-circle"><i class="bi bi-person-fill"></i></span>
+                    {% endif %}
+                </a>
+                <p class="comment-text"><a class="post-name fw-semibold text-decoration-none" href="/users/{{ post.user.username }}">{{ post.user.username }}</a> {{ post.content }}</p>
+            </div>
+
+            {% for comment in post.comments | sort(attribute='created_at', reverse=True) %}
+                <div class="comment d-flex gap-2">
+                    <a href="/users/{{ comment.user.username }}" tabindex="-1" aria-hidden="true">
+                        {% if comment.user.avatar_url %}
+                            <img class="avatar avatar-md rounded-circle" src="{{ comment.user.avatar_url }}" alt="">
+                        {% else %}
+                            <span class="avatar avatar-md avatar-default rounded-circle"><i class="bi bi-person-fill"></i></span>
+                        {% endif %}
+                    </a>
+                    <div>
+                        <p class="comment-text"><a class="post-name fw-semibold text-decoration-none" href="/users/{{ comment.user.username }}"><small class="visually-hidden">댓글 작성자: </small>{{ comment.user.username }}</a> <span class="visually-hidden">댓글 내용: </span>{{ comment.content }}</p>
+                        <div class="comment-meta d-flex align-items-center gap-2">
+                            <small>{{ comment.created_at.strftime('%H:%M') }}</small>
+                            {% if user.id == comment.user_id %}
+                                <form action="/posts/{{ post.id }}/comments/{{ comment.id }}/delete" method="post">
+                                    <input class="text-button" type="submit" value="삭제">
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <p class="comment-empty">첫 댓글을 달아주세요</p>
+            {% endfor %}
+        </div>
+
+        <!-- 좋아요 수 · 시각 -->
+        <div class="detail-info">
+            <p class="detail-likes"><i class="bi bi-heart" aria-hidden="true"></i> 좋아요 {{ post.likes | length }}개</p>
+            <small class="post-time">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+        </div>
+
+        <!-- 댓글 입력 -->
+        {% if user %}
+            <form class="comment-form d-flex align-items-center" action="/posts/{{ post.id }}/comments/create" method="post">
+                <label class="visually-hidden" for="comment-content">댓글</label>
+                <input class="comment-input" type="text" id="comment-content" name="content" placeholder="댓글 달기..." required>
+                <input class="text-button text-button-blue" type="submit" value="게시">
+            </form>
+        {% else %}
+            <a class="comment-form comment-login text-decoration-none" href="/login">로그인하고 댓글 달기</a>
+        {% endif %}
+
+    </section>
+</div>
 
 {% endblock %}

@@ -4,14 +4,18 @@
 
 {% block content %}
 
-    <h1>NEW</h1>
-    <form action="/posts/create" method="post" enctype="multipart/form-data">
-        <label for="content">내용</label>
-        <textarea name="content" id="content" required></textarea>
+    <!-- 가운데 좁은 상자 -->
+    <div class="form-box">
+        <h1 class="form-title">새 게시물 만들기</h1>
+        <form class="d-flex flex-column gap-2" action="/posts/create" method="post" enctype="multipart/form-data">
+            <label class="form-label-insta" for="photo">사진</label>
+            <input class="profile-file" type="file" id="photo" name="photo" accept="image/*" required>
 
-        <label for="photo">사진</label>
-        <input type="file" id="photo" name="photo" accept="image/*">
-        <input type="submit">
-    </form>
+            <label class="form-label-insta" for="content">내용</label>
+            <textarea class="insta-input" name="content" id="content" rows="5" placeholder="문구를 입력하세요..." required></textarea>
+
+            <input class="insta-button insta-button-blue form-submit" type="submit" value="공유하기">
+        </form>
+    </div>
 
 {% endblock %}

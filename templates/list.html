@@ -5,23 +5,57 @@
 <!-- content영역에 들어갈 코드 -->
 {% block content %}
 
-    <h1>전체게시물</h1>
-    {% for post in posts %}
-        {% if post.image_url %}
-        <img src="{{ post.image_url }}">
-        {% endif %}
-        <p>{{ post.content }}</p>
-        <a href="/users/{{ post.user.username }}"><small>작성자: {{ post.user.username }}</small></a>
-        
-        <small>댓글 {{ post.comments | length }}개</small>
-        <small>좋아요 {{ post.likes | length }} 개</small>
-        <small>{{ post.created_at.strftime('%Y%m%d %H:%M') }}</small>
-        <a href="/posts/{{ post.id }}">자세히</a>
-        
-        <form action="/posts/{{ post.id }}/likes" method="post">
-            <input type="submit" value="{% if post.id in liked_ids %}❤️{% else %}🤍{% endif %}">
-        </form>
+    <h1 class="visually-hidden">전체게시물</h1>
 
-    {% endfor %}
+    <!-- 가운데 한 줄 피드 (ref1) -->
+    <div class="feed">
+        {% for post in posts %}
+            <article class="post" id="post-{{ post.id }}">
+
+                <!-- 1. 머리: 프로필 사진 · 이름 · 올린 시각 -->
+                <header class="post-head d-flex align-items-center gap-2">
+                    <a href="/users/{{ post.user.username }}" tabindex="-1" aria-hidden="true">
+                        {% if post.user.avatar_url %}
+                            <img class="avatar avatar-md rounded-circle" src="{{ post.user.avatar_url }}" alt="">
+                        {% else %}
+                            <span class="avatar avatar-md avatar-default rounded-circle"><i class="bi bi-person-fill"></i></span>
+                        {% endif %}
+                    </a>
+                    <a class="post-name fw-semibold text-decoration-none" href="/users/{{ post.user.username }}"><span class="visually-hidden">작성자: </span>{{ post.user.username }}</a>
+                    <span class="post-dot" aria-hidden="true">•</span>
+                    <time class="post-time">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</time>
+                </header>
+
+                <!-- 2. 사진 (4:5로 자름, 사진 없는 옛 글은 그리지 않음) -->
+                {% if post.image_url %}
+                <img class="post-photo object-fit-cover" src="{{ post.image_url }}" alt="">
+                {% endif %}
+
+                <!-- 3. 아이콘 줄: 좋아요 · 댓글 -->
+                <div class="post-actions d-flex align-items-center">
+                    <form class="post-like" action="/posts/{{ post.id }}/likes" method="post">
+                        <button class="icon-button" type="submit">
+                            {% if post.id in liked_ids %}<i class="bi bi-heart-fill is-liked" aria-hidden="true"></i><span class="visually-hidden">좋아요 취소</span>{% else %}<i class="bi bi-heart" aria-hidden="true"></i><span class="visually-hidden">좋아요</span>{% endif %}
+                        </button>
+                    </form>
+                    <span class="post-count"><span class="visually-hidden">좋아요 </span>{{ post.likes | length }}<span class="visually-hidden"> 개</span></span>
+
+                    <a class="icon-button" href="/posts/{{ post.id }}">
+                        <i class="bi bi-chat" aria-hidden="true"></i><span class="visually-hidden">댓글</span>
+                    </a>
+                    <span class="post-count"><span class="visually-hidden">댓글 </span>{{ post.comments | length }}<span class="visually-hidden">개</span></span>
+                </div>
+
+                <!-- 4. 본문: 이름 본문 -->
+                <p class="post-text"><a class="post-name fw-semibold text-decoration-none" href="/users/{{ post.user.username }}">{{ post.user.username }}</a> {{ post.content }}</p>
+
+                <!-- 5. 상세 링크 -->
+                <a class="post-more text-decoration-none" href="/posts/{{ post.id }}">{% if post.comments %}댓글 {{ post.comments | length }}개 모두 보기{% else %}댓글 달기{% endif %}</a>
+
+            </article>
+        {% else %}
+            <p class="feed-empty">아직 게시물이 없습니다.</p>
+        {% endfor %}
+    </div>
 
 {% endblock %}

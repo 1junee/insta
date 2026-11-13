@@ -4,18 +4,25 @@
 
 {% block content %}
 
-    <h1>SIGNUP</h1>
+    <!-- 가운데 좁은 상자: 로고 · 안내 · 칸 · 버튼 · 오류 -->
+    <div class="form-box form-box-auth">
+        <h1 class="form-logo"><span class="logo-mark" aria-hidden="true">ı</span><span aria-hidden="true">nsta</span><span class="visually-hidden">SIGNUP</span></h1>
+        <p class="form-lead">친구들의 사진을 보려면 가입하세요.</p>
 
-    {% if error %}
-        <p>{{ error }}</p>
-    {% endif %}
+        <form class="d-flex flex-column gap-2" action="/signup" method="post">
+            <label class="visually-hidden" for="username">아이디</label>
+            <input class="insta-input" type="text" id="username" name="username" placeholder="아이디" autocomplete="username" required>
+            <label class="visually-hidden" for="password">비밀번호</label>
+            <input class="insta-input" type="password" id="password" name="password" placeholder="비밀번호" autocomplete="new-password" required>
+            <input class="insta-button insta-button-blue form-submit" type="submit" value="가입">
+        </form>
 
-    <form action="/signup" method="post">
-        <label for="username">아이디</label>
-        <input type="text" id="username" name="username" required>
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" name="password" required>
-        <input type="submit">
-    </form>
+        {% if error %}
+            <p class="form-error" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</p>
+        {% endif %}
+    </div>
+
+    <!-- 아래 작은 상자: 로그인으로 -->
+    <p class="form-box form-box-small">계정이 있으신가요? <a class="form-link text-decoration-none" href="/login">로그인</a></p>
 
 {% endblock %}
